@@ -20,7 +20,7 @@ jobs:
       - checkout
 
       # Download and cache dependencies
-      - run: cd functions
+      - run: cd ~/repo/functions
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "package.json" }}
