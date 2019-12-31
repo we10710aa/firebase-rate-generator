@@ -14,12 +14,13 @@ jobs:
       # documented at https://circleci.com/docs/2.0/circleci-images/
       # - image: circleci/mongo:3.4.4
 
-    working_directory: ~/repo/functions
+    working_directory: ~/repo
 
     steps:
       - checkout
 
       # Download and cache dependencies
+      - run: cd functions
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "package.json" }}
