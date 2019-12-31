@@ -30,8 +30,8 @@ jobs:
 
       - save_cache:
           paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
+            - functions/node_modules
+          key: v1-dependencies-{{ checksum "functions/package.json" }}
 
       # run tests!
-      - run: yarn test
+      - run: cd functions & yarn test
