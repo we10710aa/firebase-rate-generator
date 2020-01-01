@@ -20,7 +20,8 @@
     "mkdirp-promise": "^5.0.1"
   },
   "devDependencies": {
-    "firebase-functions-test": "^0.1.6"
+    "firebase-functions-test": "^0.1.6",
+    "firebase-tools": "^7.11.0"
   },
   "private": true
 }
