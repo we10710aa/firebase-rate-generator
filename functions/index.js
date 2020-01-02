@@ -11,6 +11,7 @@ const fs = require('fs');
 const { promisify } = require('util');
 const readFileAsync = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
+const existsAsync = promisfy(fs.exists)
 
 const gm = require('gm').subClass({ imageMagick: true });
 const d3 = require('d3');
@@ -211,7 +212,13 @@ class ExchangeRateChartGenerator {
             "-define", "png:compression-strategy=0",
             "-depth", "8",
             `svg:${tempLocalSVGFile}`, `png:${tempLocalImageFile}`];
-        await spawn("convert", options);
+        try{
+            spawn("convert", options);
+        } catch(e){
+            console.error(e);
+        } finally{
+            console.log('this is it');
+        }
         return tempLocalImageFile;
     }
 
@@ -229,6 +236,8 @@ exports.generateSVG = functions.https.onRequest(async (req, res) => {
         generator.loadRatesListJson(JSON.parse(fxrate));
         generator.generateSVGChart();
         if (code == 'USD') {
+            fpath = await generator.svgToPng();
+            console.log(existsAsync(fpath));
             result += await generator.svgToPng();
         }
     }
