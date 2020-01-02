@@ -213,6 +213,7 @@ class ExchangeRateChartGenerator {
             `svg:${tempLocalSVGFile}`, `png:${tempLocalImageFile}`];
         try {
             await spawn("convert", options);
+            console.log('finished generating png' + imageName)
         } catch (e) {
             console.error(e);
         } finally {
