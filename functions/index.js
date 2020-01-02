@@ -230,7 +230,7 @@ exports.generateSVG = functions.https.onRequest(async (req, res) => {
     const fxrate = JSON.stringify(req.body);
     let promises = [];
     for (const code of codes) {
-        promises.push(async () => {
+        promises.push((async () => {
             let finalUrl;
             const generator = new ExchangeRateChartGenerator(code);
             generator.loadRatesListJson(JSON.parse(fxrate));
@@ -240,7 +240,7 @@ exports.generateSVG = functions.https.onRequest(async (req, res) => {
                 finalUrl = await (this.uploadPNGtoBucket(fpath));
             }
             return finalUrl;
-        })
+        })())
     }
     let result = await Promise.all(promises);
     res.send(result);
