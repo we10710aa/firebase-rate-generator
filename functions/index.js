@@ -236,7 +236,7 @@ exports.generateSVG = functions.https.onRequest(async (req, res) => {
         generator.loadRatesListJson(JSON.parse(fxrate));
         generator.generateSVGChart();
         if (code == 'USD') {
-            fpath = await generator.svgToPng();
+            let fpath = await generator.svgToPng();
             console.log(existsAsync(fpath));
             result += fpath;
         }
