@@ -248,7 +248,7 @@ exports.generateSVG = functions.https.onRequest(async (req, res) => {
 exports.uploadPNGtoBucket = async (filePath) => {
     const bucket = admin.storage().bucket();
     const outputFile = bucket.file(filePath);
-    await bucket.upload(tempLocalImageFile, { destination: filePath });
+    await bucket.upload(filePath, { destination: filePath });
     console.log('generated rate image uploaded to storage at', filePath);
     fs.unlinkSync(path.dirname(filePath));
 
