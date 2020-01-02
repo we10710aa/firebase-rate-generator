@@ -7,7 +7,7 @@ const os = require('os');
 const path = require('path');
 const mkdirp = require('mkdirp-promise');
 const fs = require('fs');
-const gm = require('gm');
+const gm = require('gm').subClass({imageMagick: true});
 const d3 = require('d3');
 const jsdom = require('jsdom');
 
@@ -217,7 +217,7 @@ class ExchangeRateChartGenerator {
 }
 
 exports.generateSVG = functions.https.onRequest(async (req, res) => {
-    const codes = ['USD','EUR','CNY','JPY','HKD'];
+    const codes = ['USD','EUR'];
     const fxrate = JSON.stringify(req.body);
     let result = '';
     for(const code of codes){
