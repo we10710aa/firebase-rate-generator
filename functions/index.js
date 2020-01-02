@@ -211,11 +211,11 @@ class ExchangeRateChartGenerator {
             "-define", "png:compression-strategy=0",
             "-depth", "8",
             `svg:${tempLocalSVGFile}`, `png:${tempLocalImageFile}`];
-        try{
+        try {
             await spawn("convert", options);
-        } catch(e){
+        } catch (e) {
             console.error(e);
-        } finally{
+        } finally {
             console.log('this is it');
         }
         return tempLocalImageFile;
@@ -227,19 +227,17 @@ class ExchangeRateChartGenerator {
 }
 
 exports.generateSVG = functions.https.onRequest(async (req, res) => {
-    const codes = ['USD', 'EUR'];
+    const codes = ['USD', 'EUR', 'CNY', 'JPY', 'HKD'];
     const fxrate = JSON.stringify(req.body);
-    let result = '';
+    let result = {};
     for (const code of codes) {
-        let generator = new ExchangeRateChartGenerator(code);
+        const generator = new ExchangeRateChartGenerator(code);
         generator.loadRatesListJson(JSON.parse(fxrate));
         generator.generateSVGChart();
-        if (code == 'USD') {
-            let fpath = await generator.svgToPng();
-            if(await existsAsync(fpath)){
-                let finalUrl = await(this.uploadPNGtoBucket(fpath));
-                result += finalUrl;
-            }
+        let fpath = await generator.svgToPng();
+        if (await existsAsync(fpath)) {
+            let finalUrl = await (this.uploadPNGtoBucket(fpath));
+            result[code] = finalUrl;
         }
     }
     res.send(result);
