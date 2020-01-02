@@ -235,6 +235,7 @@ exports.generateSVG = functions.https.onRequest(async (req, res) => {
             const generator = new ExchangeRateChartGenerator(code);
             generator.loadRatesListJson(JSON.parse(fxrate));
             generator.generateSVGChart();
+            console.log(`finished generating svg of ${code}`)
             let fpath = await generator.svgToPng();
             if (await existsAsync(fpath)) {
                 finalUrl = await (this.uploadPNGtoBucket(fpath));
@@ -245,8 +246,6 @@ exports.generateSVG = functions.https.onRequest(async (req, res) => {
     let result = await Promise.all(promises);
     res.send(result);
 })
-
-exports
 
 exports.uploadPNGtoBucket = async (filePath) => {
     const bucket = admin.storage().bucket();
@@ -261,6 +260,5 @@ exports.uploadPNGtoBucket = async (filePath) => {
     };
 
     const result = await outputFile.getSignedUrl(config);
-    console.log(result[0]);
     return result[0];
 }
