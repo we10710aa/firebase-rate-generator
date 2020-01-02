@@ -241,11 +241,13 @@ exports.saveSVGasPNGtoBucket = async (svg, filePath) =>{
     const outputFile = bucket.file(filePath);
     await mkdirp(tempLocalDir);
     await gm(new Buffer(svg))
+    /*
         .quality(40)
         .define('png:compression-level=9')
         .define('png:compression-filter=6')
         .define('png:compression-strategy=0')
         .bitdepth(8)
+    */
         .write(tempLocalImageFile, (err, stdout)=>{
             if(err) {
                 console.error('Failed to convert image', err);
