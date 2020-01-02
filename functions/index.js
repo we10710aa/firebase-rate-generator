@@ -215,16 +215,17 @@ class ExchangeRateChartGenerator {
         return d3.select(this.dom.window.document).select('svg').node().outerHTML; 
     }
 }
-const codes = ['USD','EUR','CNY','JPY','HKD'];
-exports.generateSVG = functions.https.onRequest(async (request, response) => {
+
+exports.generateSVG = functions.https.onRequest(async (req, res) => {
+    const codes = ['USD','EUR','CNY','JPY','HKD'];
     const fxrate = JSON.stringify(req.body);
-    const result = '';
+    let result = '';
     codes.forEach((code)=>{
-        const generator = new ExchangeRateChartGenerator(code);
+        let generator = new ExchangeRateChartGenerator(code);
         generator.loadRatesListJson(JSON.parse(fxrate));
         generator.generateSVGChart();
         if(code == 'USD'){
-            result += generator.getSVG();
+            result += this.saveSVGasPNGtoBucket(generator.getSVG(),`/20200102/usd.png`);
         }
     });
     res.send(result);
