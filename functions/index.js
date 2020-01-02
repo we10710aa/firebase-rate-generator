@@ -229,7 +229,7 @@ exports.generateSVG = functions.https.onRequest(async (req, res) => {
         generator.loadRatesListJson(JSON.parse(fxrate));
         generator.generateSVGChart();
         if (code == 'USD') {
-            result += generator.svgToPng();
+            result += await generator.svgToPng();
         }
     }
     res.send(result);
