@@ -35,7 +35,6 @@ class ExchangeRateChartGenerator {
                 countryRate.UPDATETIME = parseTime(countryRate.UPDATETIME);
                 const ccy = countryRate.CCY;
                 if (d3.timeFormat('%H')(countryRate.UPDATETIME) < 17 && ccy === this.currencyCode) { // 只選取不是假日的價
-                    console.log(`${ccy}:${countryRate.UPDATETIME}`);
                     result.push(countryRate);
                 }
             });
