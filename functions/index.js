@@ -213,7 +213,7 @@ class ExchangeRateChartGenerator {
             "-depth", "8",
             `svg:${tempLocalSVGFile}`, `png:${tempLocalImageFile}`];
         try{
-            spawn("convert", options);
+            await spawn("convert", options);
         } catch(e){
             console.error(e);
         } finally{
