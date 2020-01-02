@@ -214,8 +214,9 @@ class ExchangeRateChartGenerator {
         return d3.select(this.dom.window.document).select('svg').node().outerHTML; 
     }
 }
-const codes = ['USD','EUR','CNY','JPY','HKD'];
+
 exports.generateSVG = functions.https.onRequest(async (req, res) => {
+    const codes = ['USD','EUR','CNY','JPY','HKD'];
     const fxrate = JSON.stringify(req.body);
     const result = '';
     codes.forEach((code)=>{
