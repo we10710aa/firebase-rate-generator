@@ -247,11 +247,13 @@ exports.generateSVG = functions.https.onRequest(async (req, res) => {
 })
 
 exports.uploadPNGtoBucket = async (filePath) => {
-    let tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    let today = new Date();
+    let tomorrow = today.getDate() + 1;
+    let fileName = path.basename(filePath);
+    let uploadPath = path.join(d3.timeFormat('%Y%m%d')(today), fileName);
     const bucket = admin.storage().bucket();
-    const outputFile = bucket.file(filePath);
-    await bucket.upload(filePath, { destination: filePath });
+    const outputFile = bucket.file(uploadPath);
+    await bucket.upload(filePath, { destination: uploadPath });
     console.log('generated rate image uploaded to storage at', filePath);
     //fs.unlinkSync(path.dirname(filePath));
 
