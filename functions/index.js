@@ -236,43 +236,21 @@ exports.generateSVG = functions.https.onRequest(async (req, res) => {
         generator.generateSVGChart();
         if (code == 'USD') {
             let fpath = await generator.svgToPng();
-            console.log(await existsAsync(fpath));
-            result += fpath;
+            if(await existsAsync(fpath)){
+                let finalUrl = await(this.uploadPNGtoBucket(fpath));
+                result += finalUrl;
+            }
         }
     }
     res.send(result);
 })
 
-exports.saveSVGasPNGtoBucket = async (svg, filePath) => {
-    const fileDir = path.dirname(filePath);
-    const fileName = path.basename(filePath);
-    const tempLocalDir = path.join(os.tmpdir(), 'output');
-    const tempLocalImageFile = path.join(tempLocalDir, filePath);
-
+exports.uploadPNGtoBucket = async (filePath) => {
     const bucket = admin.storage().bucket();
     const outputFile = bucket.file(filePath);
-    await mkdirp(tempLocalDir);
-    await gm(new Buffer(svg))
-        /*
-            .quality(40)
-            .define('png:compression-level=9')
-            .define('png:compression-filter=6')
-            .define('png:compression-strategy=0')
-            .bitdepth(8)
-        */
-        .write(tempLocalImageFile, (err, stdout) => {
-            if (err) {
-                console.error('Failed to convert image', err);
-                reject(err);
-            } else {
-                console.log(`Generated image: ${fileName}`);
-                resolve(stdout);
-            }
-        });
-
     await bucket.upload(tempLocalImageFile, { destination: filePath });
     console.log('generated rate image uploaded to storage at', filePath);
-    fs.unlinkSync(tempLocalImageFile);
+    fs.unlinkSync(path.dirname(filePath));
 
     const config = {
         action: 'read',
