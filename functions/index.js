@@ -218,7 +218,7 @@ class ExchangeRateChartGenerator {
 exports.generateSVG = functions.https.onRequest(async (req, res) => {
     const codes = ['USD','EUR','CNY','JPY','HKD'];
     const fxrate = JSON.stringify(req.body);
-    const result = '';
+    let result = '';
     codes.forEach((code)=>{
         let generator = new ExchangeRateChartGenerator(code);
         generator.loadRatesListJson(JSON.parse(fxrate));
