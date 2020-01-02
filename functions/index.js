@@ -11,7 +11,7 @@ const fs = require('fs');
 const { promisify } = require('util');
 const readFileAsync = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
-const existsAsync = promisfy(fs.exists)
+const existsAsync = promisify(fs.exists)
 
 const gm = require('gm').subClass({ imageMagick: true });
 const d3 = require('d3');
@@ -238,7 +238,7 @@ exports.generateSVG = functions.https.onRequest(async (req, res) => {
         if (code == 'USD') {
             fpath = await generator.svgToPng();
             console.log(existsAsync(fpath));
-            result += await generator.svgToPng();
+            result += fpath;
         }
     }
     res.send(result);
