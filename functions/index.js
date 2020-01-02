@@ -6,8 +6,13 @@ admin.initializeApp();
 const os = require('os');
 const path = require('path');
 const mkdirp = require('mkdirp-promise');
+const spawn = require('child-process-promise').spawn;
 const fs = require('fs');
-const gm = require('gm').subClass({imageMagick: true});
+const { promisify } = require('util');
+const readFileAsync = promisify(fs.readFile);
+const writeFileAsync = promisify(fs.writeFile);
+
+const gm = require('gm').subClass({ imageMagick: true });
 const d3 = require('d3');
 const jsdom = require('jsdom');
 
@@ -97,10 +102,10 @@ class ExchangeRateChartGenerator {
             let date = parseInt(d3.timeFormat('%Q')(minDate)) + parseInt(i * tickPeriod);
             xTickPoints.push(d3.timeParse('%Q')(date))
         }
-        
-        let yTickPoints =[];
-        const range = (this.maxAskRate - this.minBidRate)/5;
-        for(let i = 0 ; i < 6 ; i++){
+
+        let yTickPoints = [];
+        const range = (this.maxAskRate - this.minBidRate) / 5;
+        for (let i = 0; i < 6; i++) {
             let value = this.minBidRate + i * range;
             yTickPoints.push(value);
         }
@@ -188,12 +193,16 @@ class ExchangeRateChartGenerator {
             .text('Buy');
     }
 
-    svgToPng() {
+    async svgToPng() {
         const parseTime = d3.utcParse("%Y-%m-%dT%H:%M:%S.%LZ");
         const dateString = d3.timeFormat('%Y%m%d')(parseTime(new Date().toISOString()));
-        const imageName = `${this.currencyCode}_HIGHLOW_${dateString}`;
-        const imageStoragePath = projectSetting.shareFolder.sliderImage() + 'MobileBank/';
-        let writeStream = fs.createWriteStream(imageStoragePath + imageName + '.png');
+        const svgName = `${this.currencyCode}_HIGHLOW_${dateString}.svg`
+        const imageName = `${this.currencyCode}_HIGHLOW_${dateString}.png`;
+        const tempLocalDir = path.join(os.tmpdir(), 'output');
+        const tempLocalSVGFile = path.join(tempLocalDir, svgName);
+        const tempLocalImageFile = path.join(tempLocalDir, imageName);
+        await mkdirp(tempLocalDir);
+        await writeFileAsync(tempLocalSVGFile, d3.select(this.dom.window.document).select('svg').node().outerHTML);
         let options = [
             "-density", "72",
             "-quality", "40",
@@ -201,37 +210,32 @@ class ExchangeRateChartGenerator {
             "-define", "png:compression-filter=6",
             "-define", "png:compression-strategy=0",
             "-depth", "8",
-            "svg:", "png:-"];
-        const convert = child_process.spawn("convert", options);
-        convert.stdout.pipe(writeStream);
-        convert.stdin.write(d3.select(this.dom.window.document).select('svg').node().outerHTML);
-        convert.stdin.end();
-        convert.stdout.on('close',(code)=>{
-            node.warn('HighLow Image generated at: ' + imageStoragePath + imageName + '.png');
-        });
+            `svg:${tempLocalSVGFile}`, `png:${tempLocalImageFile}`];
+        await spawn("convert", options);
+        return tempLocalImageFile;
     }
 
     getSVG() {
-        return d3.select(this.dom.window.document).select('svg').node().outerHTML; 
+        return d3.select(this.dom.window.document).select('svg').node().outerHTML;
     }
 }
 
 exports.generateSVG = functions.https.onRequest(async (req, res) => {
-    const codes = ['USD','EUR'];
+    const codes = ['USD', 'EUR'];
     const fxrate = JSON.stringify(req.body);
     let result = '';
-    for(const code of codes){
+    for (const code of codes) {
         let generator = new ExchangeRateChartGenerator(code);
         generator.loadRatesListJson(JSON.parse(fxrate));
         generator.generateSVGChart();
-        if(code == 'USD'){
-            result += await this.saveSVGasPNGtoBucket(generator.getSVG(),`/20200102/usd.png`);
+        if (code == 'USD') {
+            result += generator.svgToPng();
         }
     }
     res.send(result);
 })
 
-exports.saveSVGasPNGtoBucket = async (svg, filePath) =>{
+exports.saveSVGasPNGtoBucket = async (svg, filePath) => {
     const fileDir = path.dirname(filePath);
     const fileName = path.basename(filePath);
     const tempLocalDir = path.join(os.tmpdir(), 'output');
@@ -241,15 +245,15 @@ exports.saveSVGasPNGtoBucket = async (svg, filePath) =>{
     const outputFile = bucket.file(filePath);
     await mkdirp(tempLocalDir);
     await gm(new Buffer(svg))
-    /*
-        .quality(40)
-        .define('png:compression-level=9')
-        .define('png:compression-filter=6')
-        .define('png:compression-strategy=0')
-        .bitdepth(8)
-    */
-        .write(tempLocalImageFile, (err, stdout)=>{
-            if(err) {
+        /*
+            .quality(40)
+            .define('png:compression-level=9')
+            .define('png:compression-filter=6')
+            .define('png:compression-strategy=0')
+            .bitdepth(8)
+        */
+        .write(tempLocalImageFile, (err, stdout) => {
+            if (err) {
                 console.error('Failed to convert image', err);
                 reject(err);
             } else {
@@ -258,11 +262,11 @@ exports.saveSVGasPNGtoBucket = async (svg, filePath) =>{
             }
         });
 
-    await bucket.upload(tempLocalImageFile,{destination: filePath});
+    await bucket.upload(tempLocalImageFile, { destination: filePath });
     console.log('generated rate image uploaded to storage at', filePath);
     fs.unlinkSync(tempLocalImageFile);
 
-    const config ={
+    const config = {
         action: 'read',
         expires: '03-01-2500'
     };
