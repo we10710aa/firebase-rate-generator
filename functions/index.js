@@ -219,7 +219,7 @@ exports.generateSVG = functions.https.onRequest(async (req, res) => {
     const fxrate = JSON.stringify(req.body);
     const result = '';
     codes.forEach((code)=>{
-        const generator = new ExchangeRateChartGenerator(code);
+        let generator = new ExchangeRateChartGenerator(code);
         generator.loadRatesListJson(JSON.parse(fxrate));
         generator.generateSVGChart();
         if(code == 'USD'){
