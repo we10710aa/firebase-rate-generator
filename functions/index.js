@@ -240,7 +240,7 @@ exports.saveSVGasPNGtoBucket = async (svg, filePath) =>{
     const bucket = admin.storage().bucket();
     const outputFile = bucket.file(filePath);
     await mkdirp(tempLocalDir);
-    await gm(new Buffer(svg),'svg.svg')
+    await gm(new Buffer(svg))
         .quality(40)
         .define('png:compression-level=9')
         .define('png:compression-filter=6')
