@@ -2,6 +2,7 @@
 
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+admin.initializeApp();
 const os = require('os');
 const path = require('path');
 const mkdirp = require('mkdirp-promise');
@@ -214,17 +215,16 @@ class ExchangeRateChartGenerator {
         return d3.select(this.dom.window.document).select('svg').node().outerHTML; 
     }
 }
-
-exports.generateSVG = functions.https.onRequest(async (req, res) => {
-    const codes = ['USD','EUR','CNY','JPY','HKD'];
+const codes = ['USD','EUR','CNY','JPY','HKD'];
+exports.generateSVG = functions.https.onRequest(async (request, response) => {
     const fxrate = JSON.stringify(req.body);
-    let result = '';
+    const result = '';
     codes.forEach((code)=>{
-        let generator = new ExchangeRateChartGenerator(code);
+        const generator = new ExchangeRateChartGenerator(code);
         generator.loadRatesListJson(JSON.parse(fxrate));
         generator.generateSVGChart();
         if(code == 'USD'){
-            result += this.saveSVGasPNGtoBucket(generator.getSVG(),`/20200102/usd.png`);
+            result += generator.getSVG();
         }
     });
     res.send(result);
