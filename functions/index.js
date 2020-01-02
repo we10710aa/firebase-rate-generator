@@ -250,7 +250,7 @@ exports.uploadPNGtoBucket = async (filePath) => {
     const outputFile = bucket.file(filePath);
     await bucket.upload(filePath, { destination: filePath });
     console.log('generated rate image uploaded to storage at', filePath);
-    fs.unlinkSync(path.dirname(filePath));
+    //fs.unlinkSync(path.dirname(filePath));
 
     const config = {
         action: 'read',
