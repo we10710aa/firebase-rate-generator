@@ -248,7 +248,8 @@ exports.generateSVG = functions.https.onRequest(async (req, res) => {
 
 exports.uploadPNGtoBucket = async (filePath) => {
     let today = new Date();
-    let tomorrow = today.getDate() + 1;
+    let tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate()+1);
     let fileName = path.basename(filePath);
     let uploadPath = path.join(d3.timeFormat('%Y%m%d')(today), fileName);
     const bucket = admin.storage().bucket();
