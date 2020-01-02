@@ -213,7 +213,6 @@ class ExchangeRateChartGenerator {
             `svg:${tempLocalSVGFile}`, `png:${tempLocalImageFile}`];
         try {
             await spawn("convert", options);
-            console.log('finished generating png' + imageName)
         } catch (e) {
             console.error(e);
         } finally {
@@ -236,7 +235,6 @@ exports.generateSVG = functions.https.onRequest(async (req, res) => {
             const generator = new ExchangeRateChartGenerator(code);
             generator.loadRatesListJson(JSON.parse(fxrate));
             generator.generateSVGChart();
-            console.log(`finished generating svg of ${code}`)
             let fpath = await generator.svgToPng();
             if (await existsAsync(fpath)) {
                 finalUrl = await (this.uploadPNGtoBucket(fpath));
@@ -249,6 +247,8 @@ exports.generateSVG = functions.https.onRequest(async (req, res) => {
 })
 
 exports.uploadPNGtoBucket = async (filePath) => {
+    let tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
     const bucket = admin.storage().bucket();
     const outputFile = bucket.file(filePath);
     await bucket.upload(filePath, { destination: filePath });
@@ -257,7 +257,7 @@ exports.uploadPNGtoBucket = async (filePath) => {
 
     const config = {
         action: 'read',
-        expires: '03-01-2500'
+        expires: d3.timeFormat('%m-%d-%Y')(tomorrow)
     };
 
     const result = await outputFile.getSignedUrl(config);
